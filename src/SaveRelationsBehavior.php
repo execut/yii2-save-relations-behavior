@@ -124,11 +124,13 @@ class SaveRelationsBehavior extends Behavior
         // get the related model foreign keys
         if (is_array($data)) {
             $fks = [];
-            if (!empty($data['id'])) {
-                $fks['id'] = $data['id'];
-            }
+            if ($this->relationId !== null) {
+                if (!empty($data['id'])) {
+                    $fks['id'] = $data['id'];
+                }
 
-            $fks[$this->relationId] = $this->owner->id;
+                $fks[$this->relationId] = $this->owner->id;
+            }
 
             foreach ($relation->link as $relatedAttribute => $modelAttribute) {
                 if (array_key_exists($relatedAttribute, $data) && !empty($data[$relatedAttribute])) {
@@ -156,10 +158,12 @@ class SaveRelationsBehavior extends Behavior
             $relationModel = new $modelClass;
         }
         if (($relationModel instanceof ActiveRecord) && is_array($data)) {
-            $data[$this->relationId] = $this->owner->id;
-            foreach ($data as $key => $value) {
-                if (empty($value) && empty($relationModel->$key)) {
-                    unset($data[$key]);
+            if ($this->relationId !== null) {
+                $data[$this->relationId] = $this->owner->id;
+                foreach ($data as $key => $value) {
+                    if (empty($value) && empty($relationModel->$key)) {
+                        unset($data[$key]);
+                    }
                 }
             }
 
