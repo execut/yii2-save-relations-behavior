@@ -182,6 +182,7 @@ class SaveRelationsBehavior extends Behavior
                 if (array_key_exists($modelAttribute, $data) && !empty($data[$modelAttribute])) {
                     $fks[$modelAttribute] = $data[$modelAttribute];
                 } else {
+                    $fks = [];
                     break;
                 }
             }
