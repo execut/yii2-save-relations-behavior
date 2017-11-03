@@ -36,22 +36,16 @@ class SaveRelationsBehavior extends Behavior
     public function init()
     {
         parent::init();
-        $allowedProperties = ['scenario'];
         foreach ($this->relations as $key => $value) {
             if (is_int($key)) {
-                $this->_relations[] = $value;
+                $name = $value;
+                $properties = [];
             } else {
-                $this->_relations[] = $key;
-                if (is_array($value)) {
-                    foreach ($value as $propertyKey => $propertyValue) {
-                        if (in_array($propertyKey, $allowedProperties)) {
-                            $this->{'_relations' . ucfirst($propertyKey)}[$key] = $propertyValue;
-                        } else {
-                            throw new UnknownPropertyException('The relation property named ' . $propertyKey . ' is not supported');
-                        }
-                    }
-                }
+                $name = $key;
+                $properties = $value;
             }
+
+            $this->addRelation($name, $properties);
         }
     }
 
@@ -186,6 +180,7 @@ class SaveRelationsBehavior extends Behavior
                     break;
                 }
             }
+
             if (empty($fks)) {
                 // Get the right link definition
                 if ($relation->via instanceof BaseActiveRecord) {
@@ -492,6 +487,31 @@ class SaveRelationsBehavior extends Behavior
         if (($this->_transaction instanceof Transaction) && $this->_transaction->isActive) {
             $this->_transaction->rollBack(); // If anything goes wrong, transaction will be rolled back
             Yii::info("Rolling back", __METHOD__);
+        }
+    }
+
+    /**
+     * @param $key
+     * @param $value
+     * @throws UnknownPropertyException
+     */
+    public function addRelation($name, $properties = []): void
+    {
+        if (in_array($name, $this->_relations)) {
+            throw new Exception('Relation ' . $name . ' already exists');
+        }
+
+        $allowedProperties = ['scenario'];
+        $this->_relations[] = $name;
+        $this->relations[] = $name;
+        if (is_array($properties)) {
+            foreach ($properties as $propertyKey => $propertyValue) {
+                if (in_array($propertyKey, $allowedProperties)) {
+                    $this->{'_relations' . ucfirst($propertyKey)}[$name] = $propertyValue;
+                } else {
+                    throw new UnknownPropertyException('The relation property named ' . $propertyKey . ' is not supported');
+                }
+            }
         }
     }
 }
