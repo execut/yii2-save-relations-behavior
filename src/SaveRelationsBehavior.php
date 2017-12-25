@@ -10,7 +10,7 @@ use yii\base\ModelEvent;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQueryInterface;
 use yii\db\BaseActiveRecord;
-use Yii\db\Exception as DbException;
+use yii\db\Exception as DbException;
 use yii\db\Transaction;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
