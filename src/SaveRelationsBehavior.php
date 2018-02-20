@@ -324,6 +324,7 @@ class SaveRelationsBehavior extends Behavior
             }
             Yii::trace("Validating {$pettyRelationName} relation model using " . $relationModel->scenario . " scenario", __METHOD__);
             if (!$relationModel->validate()) {
+                $event->isValid = false;
                 $this->_addError($relationModel, $model, $relationName, $pettyRelationName);
             }
         }
