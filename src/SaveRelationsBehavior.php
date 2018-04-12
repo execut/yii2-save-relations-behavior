@@ -351,8 +351,33 @@ class SaveRelationsBehavior extends Behavior
                         if ($relation->multiple === true) { // Has many relation
                             // Process new relations
                             $existingRecords = [];
-
                             /** @var BaseActiveRecord $relationModel */
+                            foreach ($model->{$relationName} as $i => $relationModel) {
+                                if (!$relationModel->isNewRecord) {
+                                    $existingRecords[] = $relationModel;
+                                    if (count($relationModel->dirtyAttributes)) {
+                                        if ($relationModel->validate()) {
+                                            $relationModel->save();
+                                        } else {
+                                            $pettyRelationName = Inflector::camel2words($relationName, true);
+                                            $this->_addError($relationModel, $model, $relationName, $pettyRelationName);
+                                            throw new DbException("Related record {$pettyRelationName} could not be saved.");
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Process existing added and deleted relations
+                            list($addedPks, $deletedPks) = $this->_computePkDiff($this->_oldRelationValue[$relationName], $existingRecords);
+                            // Deleted relations
+                            $initialModels = ArrayHelper::index($this->_oldRelationValue[$relationName], function (BaseActiveRecord $model) {
+                                return implode("-", $model->getPrimaryKey(true));
+                            });
+
+                            foreach ($deletedPks as $key) {
+                                $model->unlink($relationName, $initialModels[$key], true);
+                            }
+
                             foreach ($model->{$relationName} as $i => $relationModel) {
                                 if ($relationModel->isNewRecord) {
                                     if ($relation->via !== null) {
@@ -365,28 +390,9 @@ class SaveRelationsBehavior extends Behavior
                                         }
                                     }
                                     $model->link($relationName, $relationModel);
-                                } else {
-                                    $existingRecords[] = $relationModel;
-                                }
-                                if (count($relationModel->dirtyAttributes)) {
-                                    if ($relationModel->validate()) {
-                                        $relationModel->save();
-                                    } else {
-                                        $pettyRelationName = Inflector::camel2words($relationName, true);
-                                        $this->_addError($relationModel, $model, $relationName, $pettyRelationName);
-                                        throw new DbException("Related record {$pettyRelationName} could not be saved.");
-                                    }
                                 }
                             }
-                            // Process existing added and deleted relations
-                            list($addedPks, $deletedPks) = $this->_computePkDiff($this->_oldRelationValue[$relationName], $existingRecords);
-                            // Deleted relations
-                            $initialModels = ArrayHelper::index($this->_oldRelationValue[$relationName], function (BaseActiveRecord $model) {
-                                return implode("-", $model->getPrimaryKey(true));
-                            });
-                            foreach ($deletedPks as $key) {
-                                $model->unlink($relationName, $initialModels[$key], true);
-                            }
+
                             // Added relations
                             $actualModels = ArrayHelper::index($model->{$relationName}, function (BaseActiveRecord $model) {
                                 return implode("-", $model->getPrimaryKey(true));
