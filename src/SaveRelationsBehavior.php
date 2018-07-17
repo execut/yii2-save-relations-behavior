@@ -520,4 +520,10 @@ class SaveRelationsBehavior extends Behavior
             }
         }
     }
+
+    public function setRelationScenario($name, $scenario) {
+        $this->_relationsScenario[$name] = $scenario;
+
+        return $this;
+    }
 }
