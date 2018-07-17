@@ -5,7 +5,6 @@ namespace lhs\Yii2SaveRelationsBehavior;
 use RuntimeException;
 use Yii;
 use yii\base\Behavior;
-use yii\base\Exception;
 use yii\base\ModelEvent;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQueryInterface;
