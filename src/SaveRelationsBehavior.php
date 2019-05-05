@@ -51,22 +51,16 @@ class SaveRelationsBehavior extends Behavior
     public function init()
     {
         parent::init();
-        $allowedProperties = ['scenario', 'extraColumns', 'cascadeDelete'];
         foreach ($this->relations as $key => $value) {
             if (is_int($key)) {
-                $this->_relations[] = $value;
+                $relation = $value;
+                $relationProperties = [];
             } else {
-                $this->_relations[] = $key;
-                if (is_array($value)) {
-                    foreach ($value as $propertyKey => $propertyValue) {
-                        if (in_array($propertyKey, $allowedProperties)) {
-                            $this->{'_relations' . ucfirst($propertyKey)}[$key] = $propertyValue;
-                        } else {
-                            throw new UnknownPropertyException('The relation property named ' . $propertyKey . ' is not supported');
-                        }
-                    }
-                }
+                $relation = $key;
+                $relationProperties = $value;
             }
+
+            $this->addRelation($relation, $relationProperties);
         }
     }
 
@@ -818,5 +812,25 @@ class SaveRelationsBehavior extends Behavior
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param $relation
+     * @param $relationProperties
+     * @throws UnknownPropertyException
+     */
+    public function addRelation($relation, $relationProperties)
+    {
+        $allowedProperties = ['scenario', 'extraColumns', 'cascadeDelete'];
+        $this->_relations[] = $relation;
+        if (is_array($relationProperties)) {
+            foreach ($relationProperties as $propertyKey => $propertyValue) {
+                if (in_array($propertyKey, $allowedProperties)) {
+                    $this->{'_relations' . ucfirst($propertyKey)}[$relation] = $propertyValue;
+                } else {
+                    throw new UnknownPropertyException('The relation property named ' . $propertyKey . ' is not supported');
+                }
+            }
+        }
     }
 }
