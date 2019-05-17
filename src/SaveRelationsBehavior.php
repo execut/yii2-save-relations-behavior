@@ -643,6 +643,10 @@ class SaveRelationsBehavior extends Behavior
     {
         /** @var BaseActiveRecord $owner */
         $owner = $this->owner;
+        if ($owner->{$relationName} instanceof BaseActiveRecord) {
+            $owner->{$relationName}->save();
+        }
+
         if ($this->_oldRelationValue[$relationName] !== $owner->{$relationName}) {
             if ($owner->{$relationName} instanceof BaseActiveRecord) {
                 $owner->link($relationName, $owner->{$relationName});
@@ -651,9 +655,6 @@ class SaveRelationsBehavior extends Behavior
                     $owner->unlink($relationName, $this->_oldRelationValue[$relationName]);
                 }
             }
-        }
-        if ($owner->{$relationName} instanceof BaseActiveRecord) {
-            $owner->{$relationName}->save();
         }
     }
 
