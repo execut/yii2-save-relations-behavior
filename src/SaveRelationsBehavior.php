@@ -363,8 +363,8 @@ class SaveRelationsBehavior extends Behavior
         $relationModel = $model->{$relationName};
         $this->validateRelationModel(self::prettyRelationName($relationName), $relationName, $model->{$relationName});
         $relation = $model->getRelation($relationName);
-        $p1 = $model->isPrimaryKey(array_keys($relation->link));
-        $p2 = $relationModel::isPrimaryKey(array_values($relation->link));
+        $p2 = $model->isPrimaryKey(array_values($relation->link));
+        $p1 = $relationModel::isPrimaryKey(array_keys($relation->link));
         if ($relationModel->getIsNewRecord() && $p1 && !$p2) {
             // Save Has one relation new record
             if ($event->isValid && (count($model->dirtyAttributes) || $model->{$relationName}->isNewRecord)) {
