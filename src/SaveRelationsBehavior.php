@@ -123,7 +123,7 @@ class SaveRelationsBehavior extends Behavior
     {
         $relation = $this->owner->getRelation($name);
         if (!($value instanceof $relation->modelClass)) {
-            $value = $this->processModelAsArray($value, $relation);
+            $value = $this->processModelAsArray($value, $relation, $name);
         }
         $this->owner->populateRelation($name, $value);
     }
@@ -149,7 +149,7 @@ class SaveRelationsBehavior extends Behavior
                 $newRelations[] = $entry;
             } else {
                 // TODO handle this with one DB request to retrieve all models
-                $newRelations[] = $this->processModelAsArray($entry, $relation);
+                $newRelations[] = $this->processModelAsArray($entry, $relation, $name);
             }
         }
         $this->owner->populateRelation($name, $newRelations);
@@ -162,7 +162,7 @@ class SaveRelationsBehavior extends Behavior
      * @param \yii\db\ActiveQuery $relation
      * @return BaseActiveRecord
      */
-    protected function processModelAsArray($data, $relation)
+    protected function processModelAsArray($data, $relation, $name)
     {
         /** @var BaseActiveRecord $modelClass */
         $modelClass = $relation->modelClass;
@@ -210,6 +210,10 @@ class SaveRelationsBehavior extends Behavior
             $relationModel = new $modelClass;
         }
         if (($relationModel instanceof BaseActiveRecord) && is_array($data)) {
+            if (!empty($this->_relationsScenario[$name])) {
+                $relationModel->scenario = $this->_relationsScenario[$name];
+            }
+
             $relationModel->setAttributes($data);
         }
         return $relationModel;
