@@ -9,7 +9,9 @@ use yii\base\ModelEvent;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQueryInterface;
 use yii\db\BaseActiveRecord;
+use yii\db\ColumnSchema;
 use yii\db\Exception as DbException;
+use yii\db\Schema;
 use yii\db\Transaction;
 use yii\helpers\ArrayHelper;
 use yii\helpers\Inflector;
@@ -191,10 +193,25 @@ class SaveRelationsBehavior extends Behavior
                 } else {
                     $link = $relation->link;
                 }
+
                 foreach ($link as $relatedAttribute => $modelAttribute) {
                     if (array_key_exists($modelAttribute, $data) && !empty($data[$modelAttribute])) {
                         $fks[$modelAttribute] = $data[$modelAttribute];
                     }
+                }
+            }
+
+            /**
+             * @var \yii\db\mysql\Schema $schema
+             */
+            $schema = $modelClass::getTableSchema();
+            foreach ($fks as $attribute => $value) {
+                $column = $schema->getColumn($attribute);
+                if ($column) {
+                    /**
+                     * @var ColumnSchema $column
+                     */
+                    $fks[$attribute] = $column->dbTypecast($value);
                 }
             }
         } else {
