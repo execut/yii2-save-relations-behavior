@@ -12,6 +12,7 @@ use yii\base\InvalidConfigException;
 use yii\base\ModelEvent;
 use yii\base\UnknownPropertyException;
 use yii\db\ActiveQuery;
+use yii\db\ActiveRecord;
 use yii\db\BaseActiveRecord;
 use yii\db\Exception as DbException;
 use yii\helpers\ArrayHelper;
@@ -155,7 +156,7 @@ class SaveRelationsBehavior extends Behavior
         $owner = $this->owner;
         /** @var ActiveQuery $relation */
         $relation = $owner->getRelation($relationName);
-        if (!($value instanceof $relation->modelClass)) {
+        if (!($value instanceof ActiveRecord)) {
             $value = $this->processModelAsArray($value, $relation, $relationName);
         }
         $this->_newRelationValue[$relationName] = $value;
@@ -183,7 +184,7 @@ class SaveRelationsBehavior extends Behavior
             }
         }
         foreach ($value as $entry) {
-            if ($entry instanceof $relation->modelClass) {
+            if ($entry instanceof ActiveRecord) {
                 $newRelations[] = $entry;
             } else {
                 // TODO handle this with one DB request to retrieve all models
@@ -277,7 +278,7 @@ class SaveRelationsBehavior extends Behavior
             $relationModel = new $modelClass;
         }
         // If a custom scenario is set, apply it here to correctly be able to set the model attributes
-        if (array_key_exists($relationName, $this->_relationsScenario)) {
+        if (array_key_exists($relationName, $this->_relationsScenario) && $relationModel) {
             $relationModel->setScenario($this->_relationsScenario[$relationName]);
         }
         if (($relationModel instanceof BaseActiveRecord) && is_array($data)) {
