@@ -469,6 +469,11 @@ class SaveRelationsBehavior extends Behavior
         }
     }
 
+    public function refresh() {
+        $this->_newRelationValue = [];
+        $this->_oldRelationValue = [];
+    }
+
     /**
      * Link the related models.
      * If the models have not been changed, nothing will be done.
