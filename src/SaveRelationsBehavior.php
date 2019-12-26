@@ -362,14 +362,14 @@ class SaveRelationsBehavior extends Behavior
     {
         Yii::debug("_prepareHasOneRelation for {$relationName}", __METHOD__);
         $relationModel = $model->{$relationName};
-        $this->validateRelationModel(self::prettyRelationName($relationName), $relationName, $model->{$relationName});
+        $this->validateRelationModel($this->prettyRelationName($relationName), $relationName, $model->{$relationName});
         $relation = $model->getRelation($relationName);
         $p2 = $model->isPrimaryKey(array_values($relation->link));
         $p1 = $relationModel::isPrimaryKey(array_keys($relation->link));
         if ($relationModel->getIsNewRecord() && $p1 && !$p2) {
             // Save Has one relation new record
             if ($event->isValid && (count($model->dirtyAttributes) || $model->{$relationName}->isNewRecord)) {
-                Yii::debug('Saving ' . self::prettyRelationName($relationName) . ' relation model', __METHOD__);
+                Yii::debug('Saving ' . $this->prettyRelationName($relationName) . ' relation model', __METHOD__);
                 if ($model->{$relationName}->save()) {
                     $this->_savedHasOneModels[] = $model->{$relationName};
                 }
@@ -407,7 +407,7 @@ class SaveRelationsBehavior extends Behavior
     {
         foreach ($relationModel->errors as $attribute => $attributeErrors) {
             foreach ($attributeErrors as $error) {
-                $owner->addError($relationName, "{$prettyRelationName}: {$error}");
+                $owner->addError($relationName, "{$error}");
             }
         }
     }
@@ -417,9 +417,12 @@ class SaveRelationsBehavior extends Behavior
      * @param int|null $i
      * @return string
      */
-    protected static function prettyRelationName($relationName, $i = null)
+    protected function prettyRelationName($relationName, $i = null)
     {
-        return Inflector::camel2words($relationName, true) . (is_null($i) ? '' : " #{$i}");
+//        $cameled = Inflector::camel2words($relationName, true);
+        $cameled = $this->owner->getAttributeLabel($relationName);
+
+        return $cameled . (is_null($i) ? '' : " #{$i}");
     }
 
     /**
@@ -430,7 +433,7 @@ class SaveRelationsBehavior extends Behavior
     {
         /** @var BaseActiveRecord $relationModel */
         foreach ($model->{$relationName} as $i => $relationModel) {
-            $this->validateRelationModel(self::prettyRelationName($relationName, $i), $relationName, $relationModel);
+            $this->validateRelationModel($this->prettyRelationName($relationName, $i), $relationName, $relationModel);
         }
     }
 
@@ -538,8 +541,8 @@ class SaveRelationsBehavior extends Behavior
                     if ($relationModel->validate()) {
                         $relationModel->save();
                     } else {
-                        $this->_addError($relationModel, $owner, $relationName, self::prettyRelationName($relationName, $i));
-                        throw new DbException('Related record ' . self::prettyRelationName($relationName, $i) . ' could not be saved.');
+                        $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName, $i));
+                        throw new DbException('Related record ' . $this->prettyRelationName($relationName, $i) . ' could not be saved.');
                     }
                 }
                 $junctionTableColumns = $this->_getJunctionTableColumns($relationName, $relationModel);
@@ -551,8 +554,8 @@ class SaveRelationsBehavior extends Behavior
                 if ($relationModel->validate()) {
                     $relationModel->save();
                 } else {
-                    $this->_addError($relationModel, $owner, $relationName, self::prettyRelationName($relationName));
-                    throw new DbException('Related record ' . self::prettyRelationName($relationName) . ' could not be saved.');
+                    $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName));
+                    throw new DbException('Related record ' . $this->prettyRelationName($relationName) . ' could not be saved.');
                 }
             }
         }
