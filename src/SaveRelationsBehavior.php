@@ -536,26 +536,15 @@ class SaveRelationsBehavior extends Behavior
         $existingRecords = [];
         /** @var ActiveQuery $relationModel */
         foreach ($owner->{$relationName} as $i => $relationModel) {
-            if ($relationModel->isNewRecord) {
-                if (!empty($relation->via)) {
+            if (!$relationModel->isNewRecord) {
+                $existingRecords[] = $relationModel;
+                if (count($relationModel->dirtyAttributes)) {
                     if ($relationModel->validate()) {
                         $relationModel->save();
                     } else {
-                        $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName, $i));
-                        throw new DbException('Related record ' . $this->prettyRelationName($relationName, $i) . ' could not be saved.');
+                        $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName));
+                        throw new DbException('Related record ' . $this->prettyRelationName($relationName) . ' could not be saved.');
                     }
-                }
-                $junctionTableColumns = $this->_getJunctionTableColumns($relationName, $relationModel);
-                $owner->link($relationName, $relationModel, $junctionTableColumns);
-            } else {
-                $existingRecords[] = $relationModel;
-            }
-            if (count($relationModel->dirtyAttributes)) {
-                if ($relationModel->validate()) {
-                    $relationModel->save();
-                } else {
-                    $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName));
-                    throw new DbException('Related record ' . $this->prettyRelationName($relationName) . ' could not be saved.');
                 }
             }
         }
@@ -587,6 +576,21 @@ class SaveRelationsBehavior extends Behavior
         foreach ($addedPks as $key) {
             $junctionTableColumns = $this->_getJunctionTableColumns($relationName, $actualModels[$key]);
             $owner->link($relationName, $actualModels[$key], $junctionTableColumns);
+        }
+
+        foreach ($owner->{$relationName} as $i => $relationModel) {
+            if ($relationModel->isNewRecord) {
+                if (!empty($relation->via)) {
+                    if ($relationModel->validate()) {
+                        $relationModel->save();
+                    } else {
+                        $this->_addError($relationModel, $owner, $relationName, $this->prettyRelationName($relationName, $i));
+                        throw new DbException('Related record ' . $this->prettyRelationName($relationName, $i) . ' could not be saved.');
+                    }
+                }
+                $junctionTableColumns = $this->_getJunctionTableColumns($relationName, $relationModel);
+                $owner->link($relationName, $relationModel, $junctionTableColumns);
+            }
         }
     }
 
