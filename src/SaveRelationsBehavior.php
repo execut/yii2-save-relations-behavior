@@ -836,7 +836,7 @@ class SaveRelationsBehavior extends Behavior
     public function addRelation($relation, $relationProperties)
     {
         $allowedProperties = ['scenario', 'extraColumns', 'cascadeDelete'];
-        $this->_relations[] = $relation;
+        $this->_relations[$relation] = $relation;
         if (is_array($relationProperties)) {
             foreach ($relationProperties as $propertyKey => $propertyValue) {
                 if (in_array($propertyKey, $allowedProperties)) {
